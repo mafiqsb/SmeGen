@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "mafiqsb",
+    "password": null,
+    "database": "invoiceus",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "mafiqsb",
+    "password": null,
+    "database": "invoisus_test",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "root",
+    "password": null,
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}
