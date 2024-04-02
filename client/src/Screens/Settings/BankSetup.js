@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useReducer } from 'react';
 import { Dropdown } from 'flowbite-react';
 
 import { GrPowerReset } from 'react-icons/gr';
@@ -6,6 +6,9 @@ import { MdCloudUpload } from 'react-icons/md';
 import { IoIosArrowDown } from 'react-icons/io';
 import { GoPersonFill } from 'react-icons/go';
 import { BsBank2 } from 'react-icons/bs';
+import { Store } from '../../Store';
+import LoadingBox from '../../Components/LoadingBox';
+import { toast } from 'react-toastify';
 
 const banks = [
   { name: 'Maybank', imgSrc: '/images/maybanklogo.png' },
@@ -32,11 +35,43 @@ const banks = [
   { name: 'Al-Rajhi Malaysia', imgSrc: '/images/al-rajhilogo.png' },
 ];
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'UPDATE_REQUEST':
+      return {
+        ...state,
+        loading: true,
+      };
+
+    case 'UPDATE_SUCCESS':
+      return {
+        ...state,
+        loading: false,
+      };
+
+    case 'UPDATE_FAIL':
+      return {
+        ...state,
+        errorEmail: action.payload,
+        loading: false,
+      };
+
+    default:
+      return state;
+  }
+};
+
 export default function BankSetup() {
+  const { state, dispatch: ctxDispatch } = useContext(Store);
+  const [{ loading }, dispatch] = useReducer(reducer, {
+    loading: false,
+  });
+
+  const { bankInformation } = state;
+
   const [nameHolder, setNameHolder] = useState('');
   const [accountHolder, setAccountHolder] = useState('');
-
-  const [selectedBank, setSelectedBank] = useState('');
+  const [selectedBank, setSelectedBank] = useState(banks[0]);
 
   const handleBankSelect = (bank) => {
     setSelectedBank(bank);
@@ -49,11 +84,28 @@ export default function BankSetup() {
   const submitBankHandler = (e) => {
     e.preventDefault();
 
-    console.log({
-      'name holder': nameHolder,
-      'account holder': accountHolder,
-      'selected Bank': selectedBank,
-    });
+    try {
+      dispatch({ type: 'UPDATE_REQUEST' });
+      localStorage.setItem(
+        'bank_information',
+        JSON.stringify({
+          nameHolder: nameHolder,
+          accountHolder: accountHolder,
+          selectedBank: selectedBank,
+        })
+      );
+
+      ctxDispatch({
+        type: 'BANK_INFORMATION',
+        payload: { nameHolder, accountHolder, selectedBank },
+      });
+      dispatch({ type: 'UPDATE_SUCCESS' });
+      toast.success('Update Successfully');
+    } catch (error) {
+      dispatch({ type: 'UPDATE_FAIL' });
+      toast.error('Something Wrong To Update');
+      console.log(error);
+    }
   };
 
   return (
@@ -61,6 +113,31 @@ export default function BankSetup() {
       <div className="mb-8">
         <h1 className="md:text-3xl font-semibold">Bank Information</h1>
       </div>
+
+      <div className=" rounded-md p-4 xl:w-[800px] md:w-full w-[380px] md:mb-2 shadow-md">
+        <h1 className="mb-8 font-semibold md:text-2xl">Current Bank</h1>
+        <div className="md:grid mb-8 md:grid-cols-6 justify-center items-center">
+          <div className="md:col-span-2 justify-center items-center mx-auto flex">
+            <img
+              src={bankInformation.selectedBank.imgSrc}
+              className="md:w-20 max-w-20 mb-6"
+              alt="logo"
+            />
+          </div>
+
+          <div className="md:ml-4 md:col-span-4 justify-center items-center mx-auto flex">
+            <div>
+              <p className="font-bold uppercase">
+                {bankInformation.nameHolder}
+              </p>
+              <p className="font-semibold text-gray-500">
+                {bankInformation.accountHolder}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <form onSubmit={(e) => submitBankHandler(e)}>
         <div className="bg-white rounded-md md:p-8 p-4 xl:w-[800px] md:w-full w-[380px] md:mb-2 shadow-md">
           <div>
@@ -71,19 +148,12 @@ export default function BankSetup() {
                 <Dropdown
                   className="overflow-y-auto lg:h-[400px] h-[300px]"
                   dismissOnClick={true}
-                  renderTrigger={() =>
-                    selectedBank ? (
-                      <span className="border pl-4 cursor-pointer flex items-center justify-between p-1 rounded-md md:w-full w-[300px] mr-4">
-                        {selectedBank.name}
-                        <IoIosArrowDown />
-                      </span>
-                    ) : (
-                      <span className="border pl-4 cursor-pointer flex items-center justify-between p-1 rounded-md md:w-full w-[300px] mr-4">
-                        Maybank
-                        <IoIosArrowDown />
-                      </span>
-                    )
-                  }
+                  renderTrigger={() => (
+                    <span className="border pl-4 cursor-pointer flex items-center justify-between p-1 rounded-md md:w-full w-[300px] mr-4">
+                      {selectedBank.name}
+                      <IoIosArrowDown />
+                    </span>
+                  )}
                 >
                   {banks.map((bank, index) => (
                     <Dropdown.Item
@@ -100,8 +170,8 @@ export default function BankSetup() {
               <div className="md:grid md:grid-cols-6 justify-center items-center">
                 <div className="md:col-span-2 p-4 justify-center items-center mx-auto flex">
                   <img
-                    src={selectedBank ? selectedBank.imgSrc : banks[0].imgSrc}
-                    className="md:w-28 max-w-64"
+                    src={selectedBank.imgSrc}
+                    className="md:w-20 max-w-20"
                     alt="logo"
                   />
                 </div>
@@ -169,10 +239,19 @@ export default function BankSetup() {
                     <GrPowerReset className="mr-2" />
                     Reset
                   </button>
-                  <button className="xl:w-48 w-full h-12 pl-2 xl:pl-0 bg-amber-300 hover:bg-[#570987] hover:text-amber-300  duration-300 shadow-md rounded-md flex items-center justify-center">
-                    <MdCloudUpload className="mr-2" />
-                    Update
-                  </button>
+                  {loading ? (
+                    <button
+                      disabled
+                      className="xl:w-48  w-full h-12 pl-2 xl:pl-0  bg-gray-300  duration-300 shadow-md rounded-md flex items-center justify-center relative"
+                    >
+                      <LoadingBox />
+                    </button>
+                  ) : (
+                    <button className="xl:w-48  w-full mr-2 h-12 pl-2 xl:pl-0 bg-amber-300 hover:bg-[#570987] hover:text-amber-300 duration-300 shadow-md rounded-md flex items-center justify-center">
+                      <MdCloudUpload className="mr-2" />
+                      Update
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -10,7 +10,7 @@ import PublicPage from './PublicFacing/PublicPage';
 function App() {
   return (
     <BrowserRouter>
-      <div className="App">
+      <div className="App ">
         <ToastContainer
           position="bottom-center"
           autoClose={5000}

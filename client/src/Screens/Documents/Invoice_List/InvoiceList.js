@@ -19,7 +19,7 @@ const reducer = (state, action) => {
     case 'FETCH_REQUEST':
       return { ...state, loading: true };
     case 'FETCH_SUCCESS':
-      return { ...state, loading: false, clientDetails: action.payload.data };
+      return { ...state, loading: false, invoiceDetails: action.payload };
     case 'FETCH_FAIL':
       return { ...state, loading: false, error: action.payload };
     default:
@@ -28,9 +28,9 @@ const reducer = (state, action) => {
 };
 
 export default function InvoiceList() {
-  const [{ clientDetails, loading, error }, dispatch] = useReducer(reducer, {
+  const [{ invoiceDetails, loading, error }, dispatch] = useReducer(reducer, {
     loading: false,
-    clientDetails: [],
+    invoiceDetails: [],
     error: '',
   });
 
@@ -39,7 +39,7 @@ export default function InvoiceList() {
       dispatch({ type: 'FETCH_REQUEST' });
       try {
         const { data } = await axios.get('/api/data/fetchdata');
-        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+        dispatch({ type: 'FETCH_SUCCESS', payload: data.data.invoiceDetails });
       } catch (err) {
         dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
       }
@@ -104,7 +104,7 @@ export default function InvoiceList() {
         </div>
       </div>
 
-      {clientDetails.length > 0 ? (
+      {invoiceDetails.length > 0 ? (
         <div className=" bg-white rounded-md  shadow-md border mb-4 md:w-full w-full">
           <div className="w-full justify-center  xl:overflow-hidden overflow-x-auto overflow-y-auto ">
             <table className="table-auto border-collapse text-sm text-gray-500 w-full dark:text-gray-400 border-b">
@@ -138,7 +138,7 @@ export default function InvoiceList() {
               </thead>
 
               <tbody className="text-center">
-                {clientDetails.map((client) => (
+                {invoiceDetails.map((client) => (
                   <tr key={client} className="border-b-2">
                     <td className="px-6 py-4 border-r lg:text-sm text-xs">
                       {' '}

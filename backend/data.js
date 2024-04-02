@@ -1,5 +1,5 @@
 const data = {
-  clientDetails: [
+  invoiceDetails: [
     {
       number: '1',
       invoice_number: '#INV000001',
@@ -51,7 +51,53 @@ const data = {
       email: 'syahirahs@gmail.com',
     },
   ],
-  company: ['AIDA PROPERTY GROUP', 'Malaysian Refining Company'],
+  clientDetails: [
+    {
+      number: '1',
+      name: 'AIDA PROPERTY',
+      address:
+        'Lot 1234, Jalan Bukit Bintang, Taman Melawati, 68000 Ampang, Selangor, Malaysia',
+      companyName: 'AIDA PROPERTY GROUP',
+      phone: '01116185917',
+      email: 'zaidahabdullah@gmail.com',
+    },
+    {
+      number: '2',
+      name: 'PETRONAS',
+      address:
+        'Unit 5678, Jalan Telawi, Bangsar Baru, 59100 Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur, Malaysia',
+      companyName: 'PETRONAS DAGANGAN BERHAD',
+      phone: '01116185917',
+      email: 'petronas@gmail.com',
+    },
+    {
+      number: '3',
+      name: 'SHELL',
+      address:
+        'Level 910, Menara Shell, Jalan Tun Sambanthan, Brickfields, 50470 Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur, Malaysia',
+      companyName: 'SHELL SDN. BHD.',
+      phone: '01116185917',
+      email: 'shell@gmail.com',
+    },
+    {
+      number: '4',
+      name: 'Afiq',
+      address:
+        'No. 121314, Jalan Ampang, Taman Tun Abdul Razak, 68000 Ampang, Selangor, Malaysia',
+      companyName: '-',
+      phone: '01116185917',
+      email: 'afiqsam71@gmail.com',
+    },
+    {
+      number: '5',
+      name: 'Syahirah',
+      address:
+        'Block 1516, Jalan Sultan Ismail, Bandar Bukit Bintang, 50200 Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur, Malaysia',
+      companyName: 'Syahirah',
+      phone: '01116185917',
+      email: 'syahirahs@gmail.com',
+    },
+  ],
 };
 
 module.exports = data;

@@ -12,7 +12,7 @@ const data = require('./data');
 const userRouter = require('./routes/userRoutes');
 
 app.get('/api/data/fetchdata', (req, res) => {
-  res.send({ data: data.clientDetails });
+  res.send({ data });
 });
 
 app.use('/api/user', userRouter);

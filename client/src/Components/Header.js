@@ -190,7 +190,7 @@ function Header() {
                 >
                   <Link
                     to={'/app/dashboard'}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
+                    className="flex items-center  text-gray-600 hover:text-gray-800"
                     onClick={() => handleCollapseHandler('dashboardCollapse')}
                   >
                     <HiChartPie className="w-6 h-6" />
@@ -239,7 +239,7 @@ function Header() {
                   onClick={() => selectedTabs('client')}
                 >
                   <Link
-                    to={'/app/client'}
+                    to={'/app/client/clientlist'}
                     className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
                     onClick={() => handleCollapseHandler('clientCollapse')}
                   >
