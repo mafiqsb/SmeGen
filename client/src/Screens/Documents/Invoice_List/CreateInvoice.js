@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer, useContext } from 'react';
 
 import { Datepicker } from 'flowbite-react';
 import customThemeDatePicker from './customFile/customThemeDatePicker';
@@ -13,6 +13,7 @@ import { IoIosArrowDown } from 'react-icons/io';
 import { MdAttachEmail } from 'react-icons/md';
 import { ImCross } from 'react-icons/im';
 import { getError } from '../../../Utils';
+import { Store } from '../../../Store';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -28,6 +29,7 @@ const reducer = (state, action) => {
 };
 
 export default function CreateInvoice({ toggleCreateClientModel }) {
+  const { dispatch: ctxDispatch } = useContext(Store);
   const [{ clientData, loading, error }, dispatch] = useReducer(reducer, {
     loading: false,
     clientData: [],
@@ -44,7 +46,7 @@ export default function CreateInvoice({ toggleCreateClientModel }) {
   const [taxPrice, setTaxPrice] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
   const [selectedClient, setSelectedClient] = useState('');
-
+  const [selectedClientUpdate, setSelectedClientUpdate] = useState('');
   const [rows, setRows] = useState([
     {
       descriptions: '',
@@ -75,7 +77,6 @@ export default function CreateInvoice({ toggleCreateClientModel }) {
       dispatch({ type: 'FETCH_REQUEST' });
       try {
         const data = JSON.parse(localStorage.getItem('client_information'));
-        console.log(data);
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (err) {
         dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
@@ -225,6 +226,34 @@ export default function CreateInvoice({ toggleCreateClientModel }) {
       selectedStatus: selectedStatus,
       selectedClientData: selectedClientData,
     });
+
+    ctxDispatch({
+      type: 'ALL_INVOICE_INFORMATION',
+      payload: {
+        title: title,
+        note: note,
+        rows: rows,
+        subTotal: subTotal,
+        tax: tax,
+        taxPrice: taxPrice,
+        shipping: shipping,
+        finalPrice: finalPrice,
+        invoiceDate: formatDate(invoiceDate),
+        payBeforeDate: formatDate(payBeforeDate),
+        selectedStatus: selectedStatus,
+        selectedClientData: selectedClientData,
+      },
+    });
+  };
+
+  const handleClientState = (client) => {
+    setSelectedClientUpdate(client);
+  };
+
+  const handleClientUpdate = (client) => {
+    handleClientState(client);
+
+    ctxDispatch({ type: 'SELECTED_CLIENT_UPDATE', payload: client });
   };
 
   const deleteRowHandler = (index) => {
@@ -287,6 +316,10 @@ export default function CreateInvoice({ toggleCreateClientModel }) {
                       <p className="text-sm underline">{client.phoneNumber}</p>
                       <p className="text-sm underline mb-4">{client.email}</p>
                       <button
+                        onClick={() => {
+                          handleClientUpdate(client);
+                          toggleCreateClientModel();
+                        }}
                         type="button"
                         className="w-32 h-6 bg-gray-300 font-semibold text-gray-800 duration-300 shadow-md rounded-sm text-xs flex items-center justify-center mb-8"
                       >

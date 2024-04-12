@@ -23,6 +23,7 @@ function Header() {
   const [settingsCollapse, setSettingsCollapse] = useState(false);
   const [clientCollapse, setClientCollapse] = useState(false);
   const [dashboardCollapse, setDashboardCollapse] = useState(false);
+  const [logOutCollapse, setLogOutCollapse] = useState(false);
 
   const selectedTabs = (tabId) => {
     const tabs = document.querySelectorAll('.tab');
@@ -51,18 +52,28 @@ function Header() {
       setSettingsCollapse(false); // Close settings collapse
       setClientCollapse(false); // Close client collapse
       setDashboardCollapse(false); // Close dashboard collapse
+      setLogOutCollapse(false);
     } else if (collapseName === 'settingsCollapse') {
       setSettingsCollapse(!settingsCollapse);
       setDocumentCollapse(false); // Close document collapse
       setClientCollapse(false); // Close client collapse
       setDashboardCollapse(false); // Close dashboard collapse
+      setLogOutCollapse(false);
     } else if (collapseName === 'clientCollapse') {
       setClientCollapse(!clientCollapse);
       setDocumentCollapse(false); // Close document collapse
       setSettingsCollapse(false); // Close settings collapse
       setDashboardCollapse(false); // Close dashboard collapse
+      setLogOutCollapse(false);
     } else if (collapseName === 'dashboardCollapse') {
       setDashboardCollapse(!dashboardCollapse);
+      setDocumentCollapse(false); // Close document collapse
+      setSettingsCollapse(false); // Close settings collapse
+      setClientCollapse(false); // Close client collapse
+      setLogOutCollapse(false);
+    } else if (collapseName === 'logOutCollapse') {
+      setLogOutCollapse(!logOutCollapse);
+      setDashboardCollapse(false);
       setDocumentCollapse(false); // Close document collapse
       setSettingsCollapse(false); // Close settings collapse
       setClientCollapse(false); // Close client collapse
@@ -153,60 +164,60 @@ function Header() {
       <div
         className={
           sideBar
-            ? 'xl:relative  fixed inline-block shadow-md h-screen ease-in-out duration-300 transform translate-x-0 z-30'
+            ? 'lg:relative fixed inline-block shadow-md h-screen ease-in-out duration-300 transform translate-x-0 z-30 '
             : 'fixed inline-block h-screen ease-in-out duration-700 transform -translate-x-full z-30'
         }
       >
         <Sidebar>
-          <div className="flex flex-col md:pt-0 pt-28 ">
-            <div className="md:mt-28 mt-2">
-              <div className="flex flex-col items-center mb-14">
-                <div>
-                  <img
-                    className="h-20 w-20 rounded-full p-1 object-cover ring-2 ring-gray-300 dark:ring-gray-500 relative"
-                    alt="Profile"
-                    src="/images/13.jpg"
-                  />
-                  <Badge className="bg-amber-300 text-center sticky flex justify-center items-center mt-[-20px]">
-                    Afiq Sam
-                  </Badge>
-                </div>
-
-                <div className="mt-2 -mb-1">
-                  <p className="text-gray-500 text-xs">afiqsam71@gmail.com</p>
-                </div>
-
-                <div className="mt-4 flex items-center justify-center mx-auto bg-[#570987] pl-2 pr-2 pt-1 pb-1 rounded-md shadow-md">
-                  <h1 className="text-gray-100">Shot The Box</h1>
-                </div>
+          <div className="flex flex-col md:pt-0 pt-28">
+            <div className="flex flex-col items-center mt-28">
+              <div>
+                <img
+                  className="h-20 w-20 rounded-full p-1 object-cover ring-2 ring-gray-300 dark:ring-gray-500 relative"
+                  alt="Profile"
+                  src="/images/13.jpg"
+                />
+                <Badge className="bg-amber-300 text-center sticky flex justify-center items-center mt-[-20px]">
+                  Afiq Sam
+                </Badge>
               </div>
-              <div className="border-b -mt-6 mb-8"></div>
 
-              <div className="flex flex-col h-[600px] lg:overflow-hidden overflow-y-auto">
-                <div
+              <div className="mt-2 -mb-1">
+                <p className="text-gray-500 text-xs">afiqsam71@gmail.com</p>
+              </div>
+
+              <div className="mt-4 flex items-center justify-center mx-auto bg-[#570987] pl-2 pr-2 pt-1 pb-1 rounded-md shadow-md">
+                <h1 className="text-gray-100">Shot The Box</h1>
+              </div>
+            </div>
+            <div className="md:mt-14 mt-2">
+              <div className="border-b -mt-6 mb-4"></div>
+
+              <div className="flex flex-col overflow-y-auto flex-grow">
+                <Link
+                  to={'/app/dashboard'}
                   className="p-4 hover:bg-amber-300 hover:duration-700 hover:rounded-md tab"
                   id="dashboard"
-                  onClick={() => selectedTabs('dashboard')}
+                  onClick={() => {
+                    selectedTabs('dashboard');
+                    handleCollapseHandler('dashboardCollapse');
+                  }}
                 >
-                  <Link
-                    to={'/app/dashboard'}
-                    className="flex items-center  text-gray-600 hover:text-gray-800"
-                    onClick={() => handleCollapseHandler('dashboardCollapse')}
-                  >
+                  <div className="flex items-center  text-gray-600 hover:text-gray-800">
                     <HiChartPie className="w-6 h-6" />
                     <span>Dashboard</span>
-                  </Link>
-                </div>
+                  </div>
+                </Link>
                 <div>
                   <div
                     className=" flex items-center space-x-2 justify-between text-gray-600 cursor-pointer p-4 hover:bg-amber-300 hover:duration-700 hover:rounded-md tab"
                     id="document"
-                    onClick={() => selectedTabs('document')}
+                    onClick={() => {
+                      selectedTabs('document');
+                      handleCollapseHandler('documentCollapse');
+                    }}
                   >
-                    <div
-                      className="flex items-center space-x-2 w-full"
-                      onClick={() => handleCollapseHandler('documentCollapse')}
-                    >
+                    <div className="flex items-center space-x-2 w-full">
                       <HiOutlineDocumentText className="w-6 h-6" />
                       <span>Document</span>
                     </div>
@@ -233,30 +244,30 @@ function Header() {
                     </div>
                   )}
                 </div>
-                <div
+                <Link
+                  to={'/app/client/clientlist'}
                   className="p-4 hover:bg-amber-300 hover:duration-700 hover:rounded-md tab"
                   id="client"
-                  onClick={() => selectedTabs('client')}
+                  onClick={() => {
+                    selectedTabs('client');
+                    handleCollapseHandler('clientCollapse');
+                  }}
                 >
-                  <Link
-                    to={'/app/client/clientlist'}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
-                    onClick={() => handleCollapseHandler('clientCollapse')}
-                  >
+                  <div className="flex items-center space-x-2 text-gray-600 hover:text-gray-800">
                     <HiUser className="w-6 h-6" />
                     <span>Client</span>
-                  </Link>
-                </div>
-                <div className="">
+                  </div>
+                </Link>
+                <div>
                   <div
                     className="flex items-center justify-between text-gray-600 cursor-pointer p-4 hover:bg-amber-300 hover:duration-700 hover:rounded-md tab"
                     id="settings"
-                    onClick={() => selectedTabs('settings')}
+                    onClick={() => {
+                      selectedTabs('settings');
+                      handleCollapseHandler('settingsCollapse');
+                    }}
                   >
-                    <div
-                      className="flex items-center space-x-2"
-                      onClick={() => handleCollapseHandler('settingsCollapse')}
-                    >
+                    <div className="flex items-center space-x-2">
                       <IoSettingsSharp className="w-6 h-6" />
                       <span>Settings</span>
                     </div>
@@ -310,10 +321,13 @@ function Header() {
                 <div
                   className="p-4 hover:bg-amber-300 hover:duration-700 hover:rounded-md tab"
                   id="logout"
-                  onClick={() => selectedTabs('logout')}
+                  onClick={() => {
+                    selectedTabs('logout');
+                    handleCollapseHandler('logOutCollapse');
+                  }}
                 >
                   <Link
-                    to={'/logout'}
+                    to={'#logout'}
                     className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
                   >
                     <FiLogOut className="w-6 h-6" />

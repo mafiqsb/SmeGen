@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Page,
   Text,
@@ -8,6 +8,7 @@ import {
   Image,
   PDFViewer,
 } from '@react-pdf/renderer';
+import { Store } from '../../../../Store';
 
 const styles = StyleSheet.create({
   page: {
@@ -92,13 +93,32 @@ const styles = StyleSheet.create({
 });
 
 const InvoiceTemplate = () => {
+  const { state } = useContext(Store);
+
+  const {
+    invoiceUpdate,
+    companyInformation,
+    logoInformation,
+    bankInformation,
+  } = state;
+  const [appearImage, setAppearImage] = useState('/images/yourlogo.png');
+
+  useEffect(() => {
+    if (invoiceUpdate) {
+      console.log(invoiceUpdate);
+    }
+    if (logoInformation) {
+      setAppearImage(logoInformation.image);
+    }
+  }, [invoiceUpdate, logoInformation]);
+
   return (
     <PDFViewer style={{ width: '100%', height: '100vh' }}>
       <Document>
         <Page size="A4" style={styles.page}>
           <View style={styles.section}>
             <View style={styles.imageView}>
-              <Image style={styles.image} src="/images/BLACK.png" />
+              <Image style={styles.image} src={appearImage} />
               <Text
                 style={{
                   fontFamily: 'Helvetica-Bold',
@@ -128,34 +148,67 @@ const InvoiceTemplate = () => {
                         fontFamily: 'Helvetica-Bold',
                       }}
                     >
-                      Shot The Box (MA0309203-K)
+                      {companyInformation.companyName} (
+                      {companyInformation.ssmNumber})
                     </Text>
-                    <Text>No. 46, Jalan KP 3, Taman Krubong Perdana</Text>
-                    <Text>75260 Melaka Melaka</Text>
+                    <Text>{companyInformation.address1},</Text>
+                    <View style={{ flexDirection: 'row' }}>
+                      <Text>
+                        {companyInformation ? companyInformation.address2 : ''}
+                      </Text>
+                      <Text>{companyInformation.postcode},</Text>
+                      <Text>{companyInformation.city}, </Text>
+                      <Text>{companyInformation.stateName}</Text>
+                    </View>
                     <Text style={{ paddingTop: '5px' }}>
-                      afiqsam71@gmail.com   |   +60136328253
+                      {companyInformation.email}   |  {' '}
+                      {companyInformation.phoneNumber}
                     </Text>
                   </View>
                 </View>
-                <View style={styles.toCont}>
-                  <Text style={styles.toView}>To : </Text>
-                  <View style={styles.toDetails}>
-                    <Text
-                      style={{
-                        paddingBottom: '5px',
-                        fontFamily: 'Helvetica-Bold',
-                      }}
-                    >
-                      AIDA PROPERTY GROUP
-                    </Text>
-                    <Text></Text>
-                    <Text></Text>
-                    <Text style={{ paddingTop: '5px' }}>
-                      zaidahabdullah@gmail.com   |   01116185917
-                    </Text>
-                  </View>
-                </View>
+                {invoiceUpdate &&
+                  invoiceUpdate.selectedClientData &&
+                  invoiceUpdate.selectedClientData.length > 0 && (
+                    <View style={styles.toCont}>
+                      <Text style={styles.toView}>To : </Text>
+                      <View style={styles.toDetails}>
+                        <Text
+                          style={{
+                            paddingBottom: '5px',
+                            fontFamily: 'Helvetica-Bold',
+                          }}
+                        >
+                          {invoiceUpdate.selectedClientData[0].clientName}
+                        </Text>
+                        <Text>
+                          {invoiceUpdate.selectedClientData[0].address1},
+                        </Text>
+                        <View style={{ flexDirection: 'row' }}>
+                          <Text>
+                            {invoiceUpdate
+                              ? invoiceUpdate.selectedClientData[0].address2
+                              : ''}
+                          </Text>
+                          <Text>
+                            {invoiceUpdate.selectedClientData[0].postcode},
+                          </Text>
+                          <Text>
+                            {invoiceUpdate.selectedClientData[0].city},{' '}
+                          </Text>
+                          <Text>
+                            {invoiceUpdate.selectedClientData[0].state}
+                          </Text>
+                        </View>
+
+                        <Text style={{ paddingTop: '5px' }}>
+                          {invoiceUpdate.selectedClientData[0].email}  |  {' '}
+                          {invoiceUpdate.selectedClientData[0].phoneNumber}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
               </View>
+
               <View style={{ width: '200px', minheight: '120px' }}>
                 <View
                   style={{
@@ -167,7 +220,7 @@ const InvoiceTemplate = () => {
                   }}
                 >
                   <Text style={{ fontFamily: 'Helvetica-Bold' }}>
-                    #INV000001
+                    #INV000002
                   </Text>
                 </View>
                 <View
@@ -213,7 +266,7 @@ const InvoiceTemplate = () => {
                           fontFamily: 'Helvetica-Bold',
                         }}
                       >
-                        29-01-2024
+                        {invoiceUpdate.invoiceDate}
                       </Text>
                       <Text
                         style={{
@@ -221,18 +274,20 @@ const InvoiceTemplate = () => {
                           fontFamily: 'Helvetica-Bold',
                         }}
                       >
-                        02-02-2024
+                        {invoiceUpdate.payBeforeDate}
                       </Text>
                       <Text
                         style={{
                           ...styles.invStatus,
                           height: '48px',
                           fontFamily: 'Helvetica-Bold',
-                          fontSize: '15px',
+                          fontSize: '9px',
                           paddingTop: '15px',
+                          textAlign: 'left',
+                          color: '#7B3F00',
                         }}
                       >
-                        Completed
+                        {invoiceUpdate.selectedStatus}
                       </Text>
                     </View>
                   </View>
@@ -252,7 +307,7 @@ const InvoiceTemplate = () => {
                     fontFamily: 'Helvetica-Bold',
                   }}
                 >
-                  AIDA PROPERTY GROUP DINNER EVENT 1ST FEB 2024
+                  {invoiceUpdate.title}
                 </Text>
 
                 <View
@@ -310,66 +365,64 @@ const InvoiceTemplate = () => {
                     <Text>Total (MYR)</Text>
                   </View>
                 </View>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                  }}
-                >
-                  <View
-                    style={{
-                      ...styles.tableCell,
-                    }}
-                  >
-                    <Text>1</Text>
-                  </View>
-                  <View
-                    style={{
-                      ...styles.tableCell,
-                      flex: 6,
-                      alignItems: 'flex-start',
-                    }}
-                  >
-                    <Text>1. 1 Official Photographer with edited photos</Text>
-                    <Text>
-                      2. 1 Official Videographer with 3-4 minutes footage edited
-                      video.
-                    </Text>
-                    <Text>
-                      3. Complimentary Editing using Adobe After Effects
-                    </Text>
-                    <Text>4. Transportation</Text>
-                    <Text>5. Utility</Text>
-                  </View>
-                  <View
-                    style={{
-                      ...styles.tableCell,
-                      flex: 2,
-                    }}
-                  >
-                    <Text>10</Text>
-                  </View>
-                  <View
-                    style={{
-                      ...styles.tableCell,
-                      flex: 2,
-                    }}
-                  >
-                    <Text>2</Text>
-                  </View>
-                  <View
-                    style={{
-                      ...styles.tableCell,
-                      flex: 2,
-                      paddingTop: '10px',
-                      paddingBottom: '10px',
-                    }}
-                  >
-                    <Text>20</Text>
-                  </View>
-                </View>
+                {invoiceUpdate &&
+                  invoiceUpdate.selectedClientData &&
+                  invoiceUpdate.selectedClientData.length > 0 &&
+                  invoiceUpdate.rows.map((service, index) => (
+                    <View
+                      key={index}
+                      style={{
+                        flexDirection: 'row',
+                      }}
+                    >
+                      <View
+                        style={{
+                          ...styles.tableCell,
+                        }}
+                      >
+                        <Text> {index + 1} </Text>
+                      </View>
+                      <View
+                        style={{
+                          ...styles.tableCell,
+                          flex: 6,
+                          alignItems: 'flex-start',
+                        }}
+                      >
+                        <Text>{service.descriptions}</Text>
+                      </View>
+                      <View
+                        style={{
+                          ...styles.tableCell,
+                          flex: 2,
+                        }}
+                      >
+                        <Text>{service.unitPrice}</Text>
+                      </View>
+                      <View
+                        style={{
+                          ...styles.tableCell,
+                          flex: 2,
+                        }}
+                      >
+                        <Text>{service.quantity}</Text>
+                      </View>
+                      <View
+                        style={{
+                          ...styles.tableCell,
+                          flex: 2,
+                          paddingTop: '10px',
+                          paddingBottom: '10px',
+                        }}
+                      >
+                        <Text>{service.totalPrice}</Text>
+                      </View>
+                    </View>
+                  ))}
               </View>
 
               {/* Remarks, subtotal and so on... */}
+
               <View style={{ flexDirection: 'row' }}>
                 <View
                   style={{
@@ -377,6 +430,10 @@ const InvoiceTemplate = () => {
                     width: '70%',
                     marginTop: '15px',
                     paddingLeft: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    height: '100%', // Ensure the container takes full height
                   }}
                 >
                   <Text
@@ -387,20 +444,14 @@ const InvoiceTemplate = () => {
                   >
                     Remark/Notes:
                   </Text>
-                  <Text>
-                    1. A deposit of RM600 must be made before the event. The
-                    remaining payment will be made after the ceremony.
-                  </Text>
-                  <Text>
-                    2. Client will get media items 2 days after full payment was
-                    made.
-                  </Text>
-                  <Text>3. Only edited pictures and video will be given.</Text>
-                  <Text style={{ marginTop: '20px', color: '#D1D1D1' }}>
+                  <Text style={{ flex: 1 }}>{invoiceUpdate.note}</Text>{' '}
+                  {/* Set flex: 1 to take remaining space */}
+                  <Text style={{ color: '#D3D3D3' }}>
                     This is a computer-generated invoice, no signature is
                     required.
                   </Text>
                 </View>
+
                 <View style={{ flexDirection: 'row', marginLeft: '70px' }}>
                   <View style={{ width: '300px' }}>
                     <View
@@ -456,7 +507,7 @@ const InvoiceTemplate = () => {
                         fontFamily: 'Helvetica-Bold',
                       }}
                     >
-                      <Text>120.00</Text>
+                      <Text>{invoiceUpdate.subTotal}</Text>
                     </View>
                     <View
                       style={{
@@ -464,7 +515,7 @@ const InvoiceTemplate = () => {
                         fontFamily: 'Helvetica-Bold',
                       }}
                     >
-                      <Text>0.00</Text>
+                      <Text>{invoiceUpdate.taxPrice}</Text>
                     </View>
                     <View
                       style={{
@@ -472,7 +523,7 @@ const InvoiceTemplate = () => {
                         fontFamily: 'Helvetica-Bold',
                       }}
                     >
-                      <Text>0.00</Text>
+                      <Text>{invoiceUpdate.shipping}</Text>
                     </View>
                     <View
                       style={{
@@ -480,7 +531,7 @@ const InvoiceTemplate = () => {
                         fontFamily: 'Helvetica-Bold',
                       }}
                     >
-                      <Text>1200.00</Text>
+                      <Text>{invoiceUpdate.finalPrice}</Text>
                     </View>
                     <View
                       style={{
@@ -488,7 +539,7 @@ const InvoiceTemplate = () => {
                         fontFamily: 'Helvetica-Bold',
                       }}
                     >
-                      <Text>120000.00</Text>
+                      <Text></Text>
                     </View>
                   </View>
                 </View>
@@ -509,37 +560,43 @@ const InvoiceTemplate = () => {
                 <View
                   style={{
                     fontSize: '10px',
-                    marginBottom: '20px',
+
                     flexDirection: 'row',
                     padding: '10px',
                     backgroundColor: '#F3F3EF',
                   }}
                 >
                   <Image
-                    src={'/images/maybanklogo.png'}
+                    src={bankInformation.selectedBank.imgSrc}
                     style={{ width: '40px', marginRight: '20px' }}
                   />
-                  <View
-                    style={{
-                      flexDirection: 'col',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Text style={{ marginBottom: '5px' }}>Maybank</Text>
+                  {bankInformation ? (
                     <View
-                      style={{ flexDirection: 'row', alignItems: 'center' }}
+                      style={{
+                        flexDirection: 'col',
+                        justifyContent: 'center',
+                      }}
                     >
-                      <Text
-                        style={{
-                          fontFamily: 'Helvetica-Bold',
-                          marginRight: '5px',
-                        }}
-                      >
-                        554044533040
+                      <Text style={{ marginBottom: '5px' }}>
+                        {bankInformation.selectedBank.name}
                       </Text>
-                      <Text> (AFIQ SAM GLOBAL)</Text>
+                      <View
+                        style={{ flexDirection: 'row', alignItems: 'center' }}
+                      >
+                        <Text
+                          style={{
+                            fontFamily: 'Helvetica-Bold',
+                            marginRight: '5px',
+                          }}
+                        >
+                          {bankInformation.accountHolder}
+                        </Text>
+                        <Text>({bankInformation.nameHolder})</Text>
+                      </View>
                     </View>
-                  </View>
+                  ) : (
+                    ''
+                  )}
                 </View>
               </View>
             </View>

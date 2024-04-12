@@ -1,12 +1,18 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { ImCross } from 'react-icons/im';
 import { TfiWrite } from 'react-icons/tfi';
 import { Store } from '../../Store';
 
-export default function CreateClientModel({ onClose }) {
+export default function CreateUpdateClientModel({ onClose }) {
   const { state, dispatch: ctxDispatch } = useContext(Store);
+
+  const { clientUpdate } = state;
+
+  // const clientUpdate = JSON.parse(
+  //   localStorage.getItem('selected_client_update')
+  // );
 
   const [formData, setFormData] = useState({
     clientName: '',
@@ -26,6 +32,31 @@ export default function CreateClientModel({ onClose }) {
     cityDelivery: '',
     stateDelivery: '',
   });
+
+  // Update formData when clientUpdate changes
+  useEffect(() => {
+    if (clientUpdate) {
+      setFormData({
+        clientName: clientUpdate.clientName || '',
+        email: clientUpdate.email || '',
+        phoneNumber: clientUpdate.phoneNumber || '',
+        companyName: clientUpdate.companyName || '',
+        ssmRegistrationNo: clientUpdate.ssmRegistrationNo || '',
+        address1: clientUpdate.address1 || '',
+        address2: clientUpdate.address2 || '',
+        postcode: clientUpdate.postcode || '',
+        city: clientUpdate.city || '',
+        state: clientUpdate.state || '',
+        isDeliverySameAsMailing: clientUpdate.isDeliverySameAsMailing || true,
+        address1Delivery: clientUpdate.address1Delivery || '',
+        address2Delivery: clientUpdate.address2Delivery || '',
+        postcodeDelivery: clientUpdate.postcodeDelivery || '',
+        cityDelivery: clientUpdate.cityDelivery || '',
+        stateDelivery: clientUpdate.stateDelivery || '',
+      });
+      return;
+    }
+  }, [clientUpdate]);
 
   const handleChange = (e) => {
     const { name, value, checked, type } = e.target;
@@ -258,7 +289,7 @@ export default function CreateClientModel({ onClose }) {
                     <input
                       type="text"
                       name="address1Delivery"
-                      value={formData.address1Delivery}
+                      value={formData.address1}
                       onChange={handleChange}
                       className="w-full h-10 border border-gray-300 rounded-md mb-2"
                     />

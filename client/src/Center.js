@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useReducer, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Footer from './Components/Footer';
 import Header from './Components/Header';
@@ -11,9 +11,34 @@ import CompanyInformation from './Screens/Settings/CompanyInformation';
 import UploadLogo from './Screens/Settings/UploadLogo';
 import Client from './Screens/ClientList/Client';
 import CreateUpdateClientModal from './Screens/ClientList/CreateUpdateClientModel';
+import { getError } from './Utils';
+import { Store } from './Store';
+import DocumentSettings from './Screens/Settings/DocumentSettings';
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'FETCH_REQUEST':
+      return { ...state, loading: true };
+    case 'FETCH_SUCCESS':
+      return { ...state, loading: false, clientDetails: action.payload };
+    case 'FETCH_FAIL':
+      return { ...state, loading: false, error: action.payload };
+
+    default:
+      return state;
+  }
+};
 
 export default function Center() {
   const [createClientModal, setCreateClientModal] = useState(false);
+
+  const [{ clientDetails }, dispatch] = useReducer(reducer, {
+    loading: false,
+    clientDetails: [],
+    error: '',
+  });
+
+  const { dispatch: ctxDispatch } = useContext(Store);
 
   const toggleCreateClientModel = () => {
     setCreateClientModal(!createClientModal);
@@ -21,14 +46,50 @@ export default function Center() {
 
   const handleCloseModal = () => {
     setCreateClientModal(false);
+    localStorage.removeItem('selected_client_update');
+    ctxDispatch({ type: 'SELECTED_CLIENT_UPDATE', payload: '' });
   };
 
   const handleOutsideClick = (event) => {
     if (event.target === event.currentTarget) {
-      console.log(event.currentTarget);
       toggleCreateClientModel();
+      localStorage.removeItem('selected_client_update');
+
+      ctxDispatch({ type: 'SELECTED_CLIENT_UPDATE', payload: '' });
     }
   };
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     dispatch({ type: 'FETCH_REQUEST' });
+  //     try {
+  //       const { data } = await axios.get('/api/data/fetchdata');
+  //       dispatch({
+  //         type: 'FETCH_SUCCESS',
+  //         payload: data.data.clientDetails,
+  //       });
+  //     } catch (err) {
+  //       dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
+
+  useEffect(() => {
+    const fetchClientData = async () => {
+      dispatch({ type: 'FETCH_REQUEST' });
+      try {
+        const data = JSON.parse(localStorage.getItem('client_information'));
+
+        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+      } catch (err) {
+        dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
+      }
+    };
+
+    fetchClientData();
+  }, [localStorage.getItem('client_information')]);
 
   return (
     <div
@@ -70,11 +131,18 @@ export default function Center() {
           <Route
             path={'/app/client/clientlist'}
             element={
-              <Client toggleCreateClientModel={toggleCreateClientModel} />
+              <Client
+                toggleCreateClientModel={toggleCreateClientModel}
+                clientDetails={clientDetails}
+              />
             }
           />
 
           <Route />
+          <Route
+            path={'/app/settings/documentsettings'}
+            element={<DocumentSettings />}
+          />
         </Routes>
       </div>
 

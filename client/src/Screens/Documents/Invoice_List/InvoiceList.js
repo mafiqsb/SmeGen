@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from 'react';
+import React, { useContext, useEffect, useReducer, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { getError } from '../../../Utils';
@@ -13,6 +13,7 @@ import { LiaFilePdf } from 'react-icons/lia';
 import { TbEyeSearch } from 'react-icons/tb';
 import { ImCross } from 'react-icons/im';
 import { TfiWrite } from 'react-icons/tfi';
+import { Store } from '../../../Store';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -28,25 +29,56 @@ const reducer = (state, action) => {
 };
 
 export default function InvoiceList() {
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const { state, dispatch: ctxDispatch } = useContext(Store);
+
   const [{ invoiceDetails, loading, error }, dispatch] = useReducer(reducer, {
     loading: false,
     invoiceDetails: [],
     error: '',
   });
 
+  const { allInvoiceInformation } = state;
+
   useEffect(() => {
     const fetchData = async () => {
       dispatch({ type: 'FETCH_REQUEST' });
       try {
-        const { data } = await axios.get('/api/data/fetchdata');
-        dispatch({ type: 'FETCH_SUCCESS', payload: data.data.invoiceDetails });
+        dispatch({ type: 'FETCH_SUCCESS', payload: allInvoiceInformation });
+        console.log(invoiceDetails);
       } catch (err) {
         dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
       }
     };
 
     fetchData();
-  }, []);
+  }, [invoiceDetails]);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     dispatch({ type: 'FETCH_REQUEST' });
+  //     try {
+  //       const { data } = await axios.get('/api/data/fetchdata');
+  //       dispatch({ type: 'FETCH_SUCCESS', payload: data.data.invoiceDetails });
+  //     } catch (err) {
+  //       dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
+
+  //invoiceHandler
+
+  const selectedInvoiceHandler = (invoice) => {
+    setSelectedInvoice(invoice);
+  };
+
+  const handleSelectInvoice = (invoice) => {
+    selectedInvoiceHandler(invoice);
+
+    ctxDispatch({ type: 'SELECTED_INVOICE', payload: invoice });
+  };
 
   return (
     <div>
@@ -104,7 +136,7 @@ export default function InvoiceList() {
         </div>
       </div>
 
-      {invoiceDetails.length > 0 ? (
+      {invoiceDetails ? (
         <div className=" bg-white rounded-md  shadow-md border mb-4 md:w-full w-full">
           <div className="w-full justify-center  xl:overflow-hidden overflow-x-auto overflow-y-auto ">
             <table className="table-auto border-collapse text-sm text-gray-500 w-full dark:text-gray-400 border-b">
@@ -126,7 +158,7 @@ export default function InvoiceList() {
                     Total (RM)
                   </th>
                   <th scope="col" className="px-6 py-3 ">
-                    Payment Received
+                    Payment Received (RM)
                   </th>
                   <th scope="col" className="px-6 py-3 ">
                     Status
@@ -138,11 +170,11 @@ export default function InvoiceList() {
               </thead>
 
               <tbody className="text-center">
-                {invoiceDetails.map((client) => (
-                  <tr key={client} className="border-b-2">
+                {invoiceDetails.map((client, index) => (
+                  <tr key={index} className="border-b-2">
                     <td className="px-6 py-4 border-r lg:text-sm text-xs">
                       {' '}
-                      {client.number}
+                      {index + 1}
                     </td>
                     <td className="px-6 py-4 border-r">
                       <div className="px-6 py-4 lg:text-sm text-xs justify-center mx-auto items-center flex flex-col">
@@ -159,7 +191,9 @@ export default function InvoiceList() {
                     </td>
                     <td className="px-6 py-4 border-r lg:text-sm text-xs">
                       <div className=" justify-center mx-auto items-center flex flex-col">
-                        <strong>{client.client}</strong>
+                        <strong>
+                          {client.selectedClientData[0].clientName}
+                        </strong>
                         <Link>
                           <p className="underline cursor-text mb-1">
                             {client.email}
@@ -172,10 +206,19 @@ export default function InvoiceList() {
                       </div>
                     </td>
                     <td className="px-6 py-4 border-r  lg:text-sm text-xs">
-                      {client.total}
+                      <strong>{client.finalPrice}</strong>
                     </td>
-                    <td className="px-6 py-4 border-r  lg:text-sm text-xs">
-                      1,200.00
+                    <td className="px-6 py-4 border-r lg:text-sm text-xs">
+                      <div className="justify-center mx-auto items-center flex flex-col ">
+                        <strong> {client.paymentReceived}</strong>
+                        <button className=" flex mt-1 bg-yellow-200 text-center justify center items-center text-black text-xs font-medium px-2.5 py-0.5 rounded ">
+                          <FaPlus className="mr-1" />
+                          <div className="flex">
+                            <p className="mr-1">Add</p>
+                            <p>Payment</p>
+                          </div>
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-4 border-r  lg:text-sm text-xs">
                       <span className="bg-green-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-yellow-300 border border-green-300">
@@ -185,7 +228,10 @@ export default function InvoiceList() {
 
                     <td className="px-6 py-4 border-r  lg:text-sm text-xs">
                       <Link to={'/app/documents/invoicePDF'}>
-                        <button className="w-24 h-6 flex  bg-black text-center duration-300 hover:bg-[#570987] hover:text-amber-300  items-center rounded-t-sm justify-center text-white text-xs font-medium px-2.5 py-0.5 ">
+                        <button
+                          onClick={() => handleSelectInvoice(client)}
+                          className="w-24 h-6 flex  bg-black text-center duration-300 hover:bg-[#570987] hover:text-amber-300  items-center rounded-t-sm justify-center text-white text-xs font-medium px-2.5 py-0.5 "
+                        >
                           <LiaFilePdf className="mr-1" />
                           Download
                         </button>
@@ -213,7 +259,7 @@ export default function InvoiceList() {
         </div>
       ) : (
         <div className="md:w-[800px] w-full bg-red-500 items-center flex-center mx-auto shadow-md rounded-sm">
-          <p className="text-center text-white">Internal Error</p>
+          <p className="text-center text-white">No Data</p>
         </div>
       )}
     </div>

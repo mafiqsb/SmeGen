@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { getError } from '../../Utils';
@@ -8,58 +8,23 @@ import { FaMagnifyingGlass } from 'react-icons/fa6';
 
 import { ImCross } from 'react-icons/im';
 import { TfiWrite } from 'react-icons/tfi';
+import { Store } from '../../Store';
 
-const reducer = (state, action) => {
-  switch (action.type) {
-    case 'FETCH_REQUEST':
-      return { ...state, loading: true };
-    case 'FETCH_SUCCESS':
-      return { ...state, loading: false, clientDetails: action.payload };
-    case 'FETCH_FAIL':
-      return { ...state, loading: false, error: action.payload };
-    default:
-      return state;
-  }
-};
+export default function Client({ toggleCreateClientModel, clientDetails }) {
+  const { dispatch: ctxDispatch } = useContext(Store);
 
-export default function InvoiceList({ toggleCreateClientModel }) {
-  const [{ clientDetails }, dispatch] = useReducer(reducer, {
-    loading: false,
-    clientDetails: [],
-    error: '',
-  });
+  const [selectedClient, setSelectedClient] = useState('');
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     dispatch({ type: 'FETCH_REQUEST' });
-  //     try {
-  //       const { data } = await axios.get('/api/data/fetchdata');
-  //       dispatch({
-  //         type: 'FETCH_SUCCESS',
-  //         payload: data.data.clientDetails,
-  //       });
-  //     } catch (err) {
-  //       dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
-  //     }
-  //   };
+  const selectedClientHandler = (client) => {
+    setSelectedClient(client);
+  };
 
-  //   fetchData();
-  // }, []);
-
-  useEffect(() => {
-    const fetchClientData = async () => {
-      dispatch({ type: 'FETCH_REQUEST' });
-      try {
-        const data = JSON.parse(localStorage.getItem('client_information'));
-        console.log(data);
-        dispatch({ type: 'FETCH_SUCCESS', payload: data });
-      } catch (err) {
-        dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
-      }
-    };
-
-    fetchClientData();
-  }, [localStorage.getItem('client_information')]);
+  // Ensure the state is updated before dispatching
+  const handleClientUpdate = (client) => {
+    selectedClientHandler(client);
+    // Dispatch the updated client after the state is updated
+    ctxDispatch({ type: 'SELECTED_CLIENT_UPDATE', payload: client });
+  };
 
   return (
     <div>
@@ -152,7 +117,10 @@ export default function InvoiceList({ toggleCreateClientModel }) {
                     <td className="border-r mx-auto py-6 flex flex-col justify-center items-center lg:text-sm text-xs">
                       <div className="flex flex-grow justify-center items-center">
                         <button
-                          onClick={toggleCreateClientModel}
+                          onClick={() => {
+                            handleClientUpdate(client);
+                            toggleCreateClientModel();
+                          }}
                           className=" w-20 h-6 bg-green-700 text-white hover:bg-[#570987] hover:text-amber-300 duration-300 shadow-md text-xs flex items-center justify-center"
                         >
                           <TfiWrite className="mr-2" />

@@ -9,6 +9,8 @@ import { BsBank2 } from 'react-icons/bs';
 import { Store } from '../../Store';
 import LoadingBox from '../../Components/LoadingBox';
 import { toast } from 'react-toastify';
+import axios from 'axios';
+import { getError } from '../../Utils';
 
 const banks = [
   { name: 'Maybank', imgSrc: '/images/maybanklogo.png' },
@@ -47,6 +49,7 @@ const reducer = (state, action) => {
       return {
         ...state,
         loading: false,
+        updatedData: action.payload,
       };
 
     case 'UPDATE_FAIL':
@@ -63,11 +66,12 @@ const reducer = (state, action) => {
 
 export default function BankSetup() {
   const { state, dispatch: ctxDispatch } = useContext(Store);
-  const [{ loading }, dispatch] = useReducer(reducer, {
+  const [{ loading, updatedData }, dispatch] = useReducer(reducer, {
     loading: false,
+    updatedData: '',
   });
 
-  const { bankInformation } = state;
+  const { bankInformation, userInfo } = state;
 
   const [nameHolder, setNameHolder] = useState('');
   const [accountHolder, setAccountHolder] = useState('');
@@ -81,30 +85,48 @@ export default function BankSetup() {
     console.log(selectedBank);
   }, [selectedBank]);
 
-  const submitBankHandler = (e) => {
+  const submitBankHandler = async (e) => {
     e.preventDefault();
 
     try {
       dispatch({ type: 'UPDATE_REQUEST' });
-      localStorage.setItem(
-        'bank_information',
-        JSON.stringify({
-          nameHolder: nameHolder,
-          accountHolder: accountHolder,
-          selectedBank: selectedBank,
-        })
+
+      const apiEndpoint =
+        bankInformation === null
+          ? '/api/bank/uploadbankinformation'
+          : '/api/bank/editbankinformation';
+      const method = bankInformation === null ? 'post' : 'put';
+
+      const { data } = await axios[method](
+        apiEndpoint,
+        {
+          nameHolder,
+          accountHolder,
+          selectedBank,
+          id: bankInformation ? bankInformation.id : null,
+        },
+        {
+          headers: {
+            authorization: `Bearer ${userInfo.token}`,
+          },
+        }
       );
+
+      console.log(data);
 
       ctxDispatch({
         type: 'BANK_INFORMATION',
-        payload: { nameHolder, accountHolder, selectedBank },
+        payload: data.data,
       });
+
       dispatch({ type: 'UPDATE_SUCCESS' });
+
       toast.success('Update Successfully');
     } catch (error) {
-      dispatch({ type: 'UPDATE_FAIL' });
-      toast.error('Something Wrong To Update');
+      dispatch({ type: 'UPDATE_FAIL', payload: getError(error) });
+      toast.error(getError(error));
       console.log(error);
+      return;
     }
   };
 
@@ -119,7 +141,7 @@ export default function BankSetup() {
         <div className="md:grid mb-8 md:grid-cols-6 justify-center items-center">
           <div className="md:col-span-2 justify-center items-center mx-auto flex">
             <img
-              src={bankInformation.selectedBank.imgSrc}
+              src={bankInformation ? bankInformation.imgSrc : ''}
               className="md:w-20 max-w-20 mb-6"
               alt="logo"
             />
@@ -128,10 +150,10 @@ export default function BankSetup() {
           <div className="md:ml-4 md:col-span-4 justify-center items-center mx-auto flex">
             <div>
               <p className="font-bold uppercase">
-                {bankInformation.nameHolder}
+                {bankInformation ? bankInformation.nameHolder : ''}
               </p>
               <p className="font-semibold text-gray-500">
-                {bankInformation.accountHolder}
+                {bankInformation ? bankInformation.accountHolder : ''}
               </p>
             </div>
           </div>

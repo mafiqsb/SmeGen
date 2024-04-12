@@ -48,5 +48,8 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 db.user = require('./user')(sequelize, Sequelize.DataTypes);
+db.company = require('./companyinformation')(sequelize, Sequelize.DataTypes);
+db.bank = require('./bankinformation')(sequelize, Sequelize.DataTypes);
+db.document = require('./documentinformation')(sequelize, Sequelize.DataTypes);
 
 module.exports = db;

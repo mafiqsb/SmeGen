@@ -13,6 +13,8 @@ import { FaFontAwesomeFlag } from 'react-icons/fa';
 import { IoCall } from 'react-icons/io5';
 import { Store } from '../../Store';
 import { toast } from 'react-toastify';
+import axios from 'axios';
+import { getError } from '../../Utils';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -43,7 +45,11 @@ const reducer = (state, action) => {
 function CompanyInformation() {
   const { state, dispatch: ctxDispatch } = useContext(Store);
 
-  const { companyInformation } = state;
+  const { companyInformation, userInfo } = state;
+
+  const [{ loading }, dispatch] = useReducer(reducer, {
+    loading: false,
+  });
 
   const [companyName, setCompanyName] = useState(
     companyInformation ? companyInformation.companyName : ''
@@ -73,53 +79,53 @@ function CompanyInformation() {
     companyInformation ? companyInformation.stateName : ''
   );
 
-  const [{ loading }, dispatch] = useReducer(reducer, {
-    loading: false,
-  });
-
   const handleReset = (e) => {
     e.preventDefault();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       dispatch({ type: 'UPDATE_REQUEST' });
 
+      const apiEndpoint =
+        companyInformation === null
+          ? '/api/company/uploadcompanyinformation'
+          : '/api/company/editcompanyinformation';
+      const method = companyInformation === null ? 'post' : 'put';
+
+      const { data } = await axios[method](
+        apiEndpoint,
+        {
+          companyName: companyName,
+          ssmNumber: ssmNumber,
+          email: email,
+          phoneNumber: phoneNumber,
+          address1: address1,
+          address2: address2,
+          postcode: postcode,
+          city: city,
+          stateName: stateName,
+        },
+        {
+          headers: {
+            authorization: `Bearer ${userInfo.token}`,
+          },
+        }
+      );
+
       ctxDispatch({
         type: 'COMPANY_INFORMATION',
-        payload: {
-          companyName,
-          ssmNumber,
-          email,
-          phoneNumber,
-          address1,
-          address2,
-          postcode,
-          city,
-          stateName,
-        },
+        payload: data.data,
       });
-      localStorage.setItem(
-        'company_information',
-        JSON.stringify({
-          companyName,
-          ssmNumber,
-          email,
-          phoneNumber,
-          address1,
-          address2,
-          postcode,
-          city,
-          stateName,
-        })
-      );
+
       dispatch({ type: 'UPDATE_SUCCESS' });
+
       toast.success('Update Successfully');
     } catch (error) {
-      dispatch({ type: 'UPDATE_FAIL' });
-      toast.error('Something Wrong To Update');
+      dispatch({ type: 'UPDATE_FAIL', payload: getError(error) });
+      toast.error(getError(error));
       console.log(error);
     }
   };
