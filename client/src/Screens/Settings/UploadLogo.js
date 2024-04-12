@@ -1,4 +1,4 @@
-import React, { useContext, useState, useReducer } from 'react';
+import React, { useContext, useState, useReducer, useEffect } from 'react';
 import LoadingBox from '../../Components/LoadingBox';
 import { GrPowerReset } from 'react-icons/gr';
 import { MdCloudUpload } from 'react-icons/md';
@@ -34,9 +34,10 @@ const reducer = (state, action) => {
 export default function UploadLogo() {
   const { state, dispatch: ctxDispatch } = useContext(Store);
 
-  const { logoInformation } = state;
+  const { logoInformation, userInfo } = state;
 
   const [coverImage, setCoverImage] = useState('');
+  const [appearImage, setAppearImage] = useState('');
 
   const [{ loading }, dispatch] = useReducer(reducer, {
     loading: false,
@@ -49,19 +50,31 @@ export default function UploadLogo() {
     setCoverImage(imageCoverURL);
   };
 
-  const fileSubmitHandler = (e) => {
+  const fileSubmitHandler = async (e) => {
     e.preventDefault();
     try {
       dispatch({ type: 'UPDATE_REQUEST' });
+
+      const apiEndpoint =
+        bankInformation === null ? '/api/uploadimage/upload' : '/api/bank/edit';
+      const method = logoInformation === null ? 'post' : 'put';
+
+      const { data } = await axios[method](
+        apiEndpoint,
+        {
+          id: logoInformation ? logoInformation.id : null,
+        },
+        {
+          headers: {
+            authorization: `Bearer ${userInfo.token}`,
+          },
+        }
+      );
 
       ctxDispatch({
         type: 'LOGO_INFORMATION',
         payload: { image: coverImage },
       });
-      localStorage.setItem(
-        'logo_information',
-        JSON.stringify({ image: coverImage })
-      );
 
       dispatch({ type: 'UPDATE_SUCCESS' });
       toast.success('Update Successfully');
@@ -71,6 +84,12 @@ export default function UploadLogo() {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    if (logoInformation) {
+      setAppearImage(logoInformation.image);
+    }
+  }, [logoInformation]);
 
   return (
     <div>
@@ -82,11 +101,7 @@ export default function UploadLogo() {
           <div>
             <p className="font-semibold mb-4">Current Logo</p>
             <img
-              src={
-                logoInformation.image
-                  ? logoInformation.image
-                  : '/images/yourlogo.png'
-              }
+              src={appearImage ? appearImage : '/images/yourlogo.png'}
               className="w-60"
               alt="logo"
             />
