@@ -4,6 +4,7 @@ import { GrPowerReset } from 'react-icons/gr';
 import { MdCloudUpload } from 'react-icons/md';
 import { Store } from '../../Store';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -43,11 +44,12 @@ export default function UploadLogo() {
     loading: false,
   });
 
+  const fileResetHandler = (e) => {};
+
   const fileUploadHandler = (e) => {
     const imageFile = e.target.files[0];
-    const imageCoverURL = URL.createObjectURL(imageFile);
 
-    setCoverImage(imageCoverURL);
+    setCoverImage(imageFile);
   };
 
   const fileSubmitHandler = async (e) => {
@@ -55,14 +57,33 @@ export default function UploadLogo() {
     try {
       dispatch({ type: 'UPDATE_REQUEST' });
 
+      const formData = new FormData();
+
+      formData.append('file', coverImage);
+
+      const result = await axios.post(
+        '/api/uploadcloudinary/uploadlogo',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            authorization: `Bearer ${userInfo.token}`,
+          },
+        }
+      );
+
       const apiEndpoint =
-        bankInformation === null ? '/api/uploadimage/upload' : '/api/bank/edit';
+        logoInformation === null
+          ? '/api/uploadimage/upload'
+          : '/api/uploadimage/edit';
       const method = logoInformation === null ? 'post' : 'put';
 
       const { data } = await axios[method](
         apiEndpoint,
         {
-          id: logoInformation ? logoInformation.id : null,
+          oldLogoHandler: appearImage ? appearImage : '',
+          logoHandler: result.data.secure_url,
+          id: logoInformation ? logoInformation.image.id : null,
         },
         {
           headers: {
@@ -73,7 +94,7 @@ export default function UploadLogo() {
 
       ctxDispatch({
         type: 'LOGO_INFORMATION',
-        payload: { image: coverImage },
+        payload: { image: data.data },
       });
 
       dispatch({ type: 'UPDATE_SUCCESS' });
@@ -87,7 +108,7 @@ export default function UploadLogo() {
 
   useEffect(() => {
     if (logoInformation) {
-      setAppearImage(logoInformation.image);
+      setAppearImage(logoInformation.image.imageLogo);
     }
   }, [logoInformation]);
 
@@ -121,7 +142,11 @@ export default function UploadLogo() {
             </div>
             <div className=" mt-8 border-t-4">
               <div className="mt-8 flex justify-end">
-                <button className="xl:w-48  w-full mr-2 h-12 pl-2 xl:pl-0 text-gray-700 font-bold hover:bg-gray-500 hover:text-white bg-gray-300  duration-300 shadow-md rounded-md flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={(e) => fileResetHandler(e)}
+                  className="xl:w-48  w-full mr-2 h-12 pl-2 xl:pl-0 text-gray-700 font-bold hover:bg-gray-500 hover:text-white bg-gray-300  duration-300 shadow-md rounded-md flex items-center justify-center"
+                >
                   <GrPowerReset className="mr-2" />
                   Reset
                 </button>

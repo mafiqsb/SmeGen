@@ -15,8 +15,7 @@ const uploadbankinformation = async (req, res) => {
       imgSrc: imgSrc,
       bankName: bankName,
     });
-    //
-    // Send a success response with the saved bank information
+
     res.status(200).send({ data: newBankInfo });
     return;
   } catch (error) {
@@ -34,7 +33,7 @@ const editbankinformation = async (req, res) => {
   const id = req.body.id;
 
   try {
-    // Find the company record based on email
+    // Cari bank record berdasarkan email
     let bankRecord = await bankInformationModel.findOne({
       where: { id: id },
     });
@@ -46,7 +45,6 @@ const editbankinformation = async (req, res) => {
       bankName: bankName,
     });
 
-    // Send response indicating success
     res.status(200).send({
       data: bankRecord,
     });
