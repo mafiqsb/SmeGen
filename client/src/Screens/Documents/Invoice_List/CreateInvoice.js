@@ -14,6 +14,7 @@ import { MdAttachEmail } from 'react-icons/md';
 import { ImCross } from 'react-icons/im';
 import { getError } from '../../../Utils';
 import { Store } from '../../../Store';
+import axios from 'axios';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -29,8 +30,10 @@ const reducer = (state, action) => {
 };
 
 export default function CreateInvoice({ toggleCreateClientModel }) {
-  const { dispatch: ctxDispatch } = useContext(Store);
-  const [{ clientData, loading, error }, dispatch] = useReducer(reducer, {
+  const { state, dispatch: ctxDispatch } = useContext(Store);
+
+  const { userInfo } = state;
+  const [{ clientData }, dispatch] = useReducer(reducer, {
     loading: false,
     clientData: [],
     error: '',
@@ -58,7 +61,6 @@ export default function CreateInvoice({ toggleCreateClientModel }) {
 
   // Function to format date
   const formatDate = (date) => {
-    // Check if the date is defined
     if (date instanceof Date && !isNaN(date)) {
       return date.toLocaleDateString('en-US', {
         month: 'long',
@@ -73,18 +75,27 @@ export default function CreateInvoice({ toggleCreateClientModel }) {
   // FETCH CLIENT DATA FUNCTION
 
   useEffect(() => {
-    const fetchClientData = async () => {
+    const fetchData = async () => {
       dispatch({ type: 'FETCH_REQUEST' });
       try {
-        const data = JSON.parse(localStorage.getItem('client_information'));
-        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+        const { data } = await axios.get('/api/client/getallclient', {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        });
+
+        dispatch({
+          type: 'FETCH_SUCCESS',
+          payload: data,
+        });
+        console.log(data);
       } catch (err) {
         dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
       }
     };
 
-    fetchClientData();
-  }, [localStorage.getItem('client_information')]); // Use 'data' as a dependency
+    fetchData();
+  }, [ctxDispatch, userInfo.token]);
 
   useEffect(() => {
     if (clientData.length > 0) {

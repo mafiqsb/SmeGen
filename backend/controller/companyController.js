@@ -28,7 +28,10 @@ const uploadcompanyinformation = async (req, res) => {
 
     res
       .status(200)
-      .send({ message: 'Album successfully created', data: savedCompanyInfo });
+      .send({
+        message: 'Company successfully created',
+        data: savedCompanyInfo,
+      });
   } catch (error) {
     console.error('Failed to create user:', error);
     res.status(500).send({ message: 'Failed to create user' });

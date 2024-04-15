@@ -15,11 +15,11 @@ const initialState = {
   logoInformation: localStorage.getItem('logo_information')
     ? JSON.parse(localStorage.getItem('logo_information'))
     : null,
-  clientInformation: localStorage.getItem('client_information')
-    ? JSON.parse(localStorage.getItem('client_information'))
-    : [],
   clientUpdate: localStorage.getItem('selected_client_update')
     ? JSON.parse(localStorage.getItem('selected_client_update'))
+    : null,
+  clientDelete: localStorage.getItem('selected_client_delete')
+    ? JSON.parse(localStorage.getItem('selected_client_delete'))
     : null,
 
   allInvoiceInformation: localStorage.getItem('all_invoice_information')
@@ -69,7 +69,7 @@ function reducer(state, action) {
       );
       return {
         ...state,
-        bankInformation: updatedBankInformation, // Update bankInformation state with the latest data
+        bankInformation: updatedBankInformation,
       };
 
     case 'LOGO_INFORMATION':
@@ -79,21 +79,6 @@ function reducer(state, action) {
       return {
         ...state,
         logoInformation: companyLogo,
-      };
-
-    case 'CLIENT_INFORMATION':
-      const clientData = action.payload;
-
-      const updatedClientData = [...state.clientInformation, clientData];
-
-      localStorage.setItem(
-        'client_information',
-        JSON.stringify(updatedClientData)
-      );
-
-      return {
-        ...state,
-        clientInformation: updatedClientData,
       };
 
     case 'SELECTED_CLIENT_UPDATE':
@@ -108,6 +93,18 @@ function reducer(state, action) {
       return {
         ...state,
         clientUpdate: temporaryFileTransfer,
+      };
+
+    case 'SELECTED_CLIENT_DELETE':
+      const selectedDelete = action.payload;
+
+      localStorage.setItem(
+        'selected_client_delete',
+        JSON.stringify(selectedDelete)
+      );
+      return {
+        ...state,
+        clientDelete: selectedDelete,
       };
 
     case 'ALL_INVOICE_INFORMATION':

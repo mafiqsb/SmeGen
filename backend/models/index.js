@@ -52,4 +52,6 @@ db.company = require('./companyinformation')(sequelize, Sequelize.DataTypes);
 db.bank = require('./bankinformation')(sequelize, Sequelize.DataTypes);
 db.document = require('./documentinformation')(sequelize, Sequelize.DataTypes);
 db.logo = require('./logoinformation')(sequelize, Sequelize.DataTypes);
+db.client = require('./clientinformation')(sequelize, Sequelize.DataTypes);
+
 module.exports = db;

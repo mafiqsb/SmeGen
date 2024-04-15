@@ -10,6 +10,7 @@ const bankRouter = require('./routes/bankRoutes');
 const documentRouter = require('./routes/documentRoutes');
 const imageRouter = require('./routes/imageRoutes');
 const uploadRouter = require('./routes/uploadRoutes');
+const clientRouter = require('./routes/clientRoutes');
 
 app.use(cors());
 app.use(express.json());
@@ -28,6 +29,7 @@ app.use('/api/bank', bankRouter);
 app.use('/api/document', documentRouter);
 app.use('/api/uploadimage', imageRouter);
 app.use('/api/uploadcloudinary', uploadRouter);
+app.use('/api/client', clientRouter);
 
 const port = process.env.PORT || 8000;
 

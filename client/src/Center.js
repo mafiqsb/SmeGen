@@ -14,6 +14,8 @@ import CreateUpdateClientModal from './Screens/ClientList/CreateUpdateClientMode
 import { getError } from './Utils';
 import { Store } from './Store';
 import DocumentSettings from './Screens/Settings/DocumentSettings';
+import axios from 'axios';
+import CreateDeleteClientModel from './Screens/ClientList/CreateDeleteClientModel';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -31,6 +33,7 @@ const reducer = (state, action) => {
 
 export default function Center() {
   const [createClientModal, setCreateClientModal] = useState(false);
+  const [createDeleteModal, setCreateDeleteModal] = useState(false);
 
   const [{ clientDetails }, dispatch] = useReducer(reducer, {
     loading: false,
@@ -38,58 +41,65 @@ export default function Center() {
     error: '',
   });
 
-  const { dispatch: ctxDispatch } = useContext(Store);
+  const { state, dispatch: ctxDispatch } = useContext(Store);
+
+  const { userInfo } = state;
 
   const toggleCreateClientModel = () => {
     setCreateClientModal(!createClientModal);
   };
 
-  const handleCloseModal = () => {
+  const toggleDeleteClientModel = () => {
+    setCreateDeleteModal(!createDeleteModal);
+  };
+
+  const handleCloseCreateModal = () => {
     setCreateClientModal(false);
     localStorage.removeItem('selected_client_update');
     ctxDispatch({ type: 'SELECTED_CLIENT_UPDATE', payload: '' });
   };
 
-  const handleOutsideClick = (event) => {
+  const handleCloseDeleteModal = () => {
+    setCreateDeleteModal(false);
+  };
+
+  const handleOutsideCreateClick = (event) => {
     if (event.target === event.currentTarget) {
       toggleCreateClientModel();
+
       localStorage.removeItem('selected_client_update');
 
       ctxDispatch({ type: 'SELECTED_CLIENT_UPDATE', payload: '' });
     }
   };
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     dispatch({ type: 'FETCH_REQUEST' });
-  //     try {
-  //       const { data } = await axios.get('/api/data/fetchdata');
-  //       dispatch({
-  //         type: 'FETCH_SUCCESS',
-  //         payload: data.data.clientDetails,
-  //       });
-  //     } catch (err) {
-  //       dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
+  const handleOutsideDeleteClick = (event) => {
+    if (event.target === event.currentTarget) {
+      toggleDeleteClientModel();
+    }
+  };
 
   useEffect(() => {
-    const fetchClientData = async () => {
+    const fetchData = async () => {
       dispatch({ type: 'FETCH_REQUEST' });
       try {
-        const data = JSON.parse(localStorage.getItem('client_information'));
+        const { data } = await axios.get('/api/client/getallclient', {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        });
 
-        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+        dispatch({
+          type: 'FETCH_SUCCESS',
+          payload: data,
+        });
       } catch (err) {
         dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
       }
     };
 
-    fetchClientData();
-  }, [localStorage.getItem('client_information')]);
+    fetchData();
+  }, [ctxDispatch]);
 
   return (
     <div
@@ -133,6 +143,7 @@ export default function Center() {
             element={
               <Client
                 toggleCreateClientModel={toggleCreateClientModel}
+                toggleDeleteClientModel={toggleDeleteClientModel}
                 clientDetails={clientDetails}
               />
             }
@@ -153,10 +164,20 @@ export default function Center() {
       {createClientModal && (
         <div
           className="fixed top-0 left-0 right-0 bottom-0 z-50 bg-black bg-opacity-50 flex justify-center items-center"
-          onClick={handleOutsideClick}
+          onClick={handleOutsideCreateClick}
         >
           <div className="relative justify-center items-center flex">
-            <CreateUpdateClientModal onClose={handleCloseModal} />
+            <CreateUpdateClientModal onClose={handleCloseCreateModal} />
+          </div>
+        </div>
+      )}
+      {createDeleteModal && (
+        <div
+          className="fixed top-0 left-0 right-0 bottom-0 z-50 bg-black bg-opacity-50 flex justify-center items-center"
+          onClick={handleOutsideDeleteClick}
+        >
+          <div className="relative justify-center items-center flex">
+            <CreateDeleteClientModel onClose={handleCloseDeleteModal} />
           </div>
         </div>
       )}

@@ -4,15 +4,12 @@ import { toast } from 'react-toastify';
 import { ImCross } from 'react-icons/im';
 import { TfiWrite } from 'react-icons/tfi';
 import { Store } from '../../Store';
+import axios from 'axios';
 
 export default function CreateUpdateClientModel({ onClose }) {
   const { state, dispatch: ctxDispatch } = useContext(Store);
 
-  const { clientUpdate } = state;
-
-  // const clientUpdate = JSON.parse(
-  //   localStorage.getItem('selected_client_update')
-  // );
+  const { clientUpdate, userInfo } = state;
 
   const [formData, setFormData] = useState({
     clientName: '',
@@ -31,6 +28,7 @@ export default function CreateUpdateClientModel({ onClose }) {
     postcodeDelivery: '',
     cityDelivery: '',
     stateDelivery: '',
+    id: '',
   });
 
   // Update formData when clientUpdate changes
@@ -53,6 +51,7 @@ export default function CreateUpdateClientModel({ onClose }) {
         postcodeDelivery: clientUpdate.postcodeDelivery || '',
         cityDelivery: clientUpdate.cityDelivery || '',
         stateDelivery: clientUpdate.stateDelivery || '',
+        id: clientUpdate.id || '',
       });
       return;
     }
@@ -70,38 +69,54 @@ export default function CreateUpdateClientModel({ onClose }) {
     onClose();
   };
 
-  const clientSubmitHandler = (e) => {
+  const clientSubmitHandler = async (e) => {
     let updatedFormData = { ...formData };
+
+    updatedFormData = {
+      ...updatedFormData,
+
+      address1Delivery: formData.address1,
+      address2Delivery: formData.address2,
+      postcodeDelivery: formData.postcode,
+      cityDelivery: formData.city,
+      stateDelivery: formData.state,
+    };
+
     e.preventDefault();
 
     try {
-      if (formData.isDeliverySameAsMailing) {
-        updatedFormData = {
-          ...updatedFormData,
+      const dataToUpload = formData.isDeliverySameAsMailing
+        ? updatedFormData
+        : formData;
 
-          address1Delivery: formData.address1,
-          address2Delivery: formData.address2,
-          postcodeDelivery: formData.postcode,
-          cityDelivery: formData.city,
-          stateDelivery: formData.state,
-        };
+      const apiEndpoint = clientUpdate.id
+        ? '/api/client/updateclient'
+        : '/api/client/uploadclient';
+      const method = clientUpdate.id ? 'put' : 'post';
+      await axios[method](
+        apiEndpoint,
+        {
+          formData: dataToUpload,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        }
+      );
 
-        ctxDispatch({
-          type: 'CLIENT_INFORMATION',
-          payload: updatedFormData,
-        });
-      } else {
-        ctxDispatch({
-          type: 'CLIENT_INFORMATION',
-          payload: formData,
-        });
-      }
-
-      toast.success('client succesfully save');
+      ctxDispatch({
+        type: 'CLIENT_INFORMATION',
+        payload: dataToUpload,
+      });
 
       onClose();
-    } catch {
-      window.alert('there is error');
+      toast.success('Client successfully saved');
+
+      window.location.reload();
+    } catch (error) {
+      console.error('Error occurred:', error);
+      window.alert('There was an error');
     }
   };
 
@@ -126,6 +141,7 @@ export default function CreateUpdateClientModel({ onClose }) {
                 Client Name
               </label>
               <input
+                required
                 type="text"
                 name="clientName"
                 value={formData.clientName}
@@ -289,7 +305,7 @@ export default function CreateUpdateClientModel({ onClose }) {
                     <input
                       type="text"
                       name="address1Delivery"
-                      value={formData.address1}
+                      value={formData.address1Delivery}
                       onChange={handleChange}
                       className="w-full h-10 border border-gray-300 rounded-md mb-2"
                     />

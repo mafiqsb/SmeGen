@@ -1,7 +1,4 @@
 import React, { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { getError } from '../../Utils';
 
 import { FaPlus } from 'react-icons/fa';
 import { FaMagnifyingGlass } from 'react-icons/fa6';
@@ -10,7 +7,11 @@ import { ImCross } from 'react-icons/im';
 import { TfiWrite } from 'react-icons/tfi';
 import { Store } from '../../Store';
 
-export default function Client({ toggleCreateClientModel, clientDetails }) {
+export default function Client({
+  toggleDeleteClientModel,
+  toggleCreateClientModel,
+  clientDetails,
+}) {
   const { dispatch: ctxDispatch } = useContext(Store);
 
   const [selectedClient, setSelectedClient] = useState('');
@@ -22,8 +23,12 @@ export default function Client({ toggleCreateClientModel, clientDetails }) {
   // Ensure the state is updated before dispatching
   const handleClientUpdate = (client) => {
     selectedClientHandler(client);
-    // Dispatch the updated client after the state is updated
+
     ctxDispatch({ type: 'SELECTED_CLIENT_UPDATE', payload: client });
+  };
+
+  const handleDeleteUpdate = (client) => {
+    ctxDispatch({ type: 'SELECTED_CLIENT_DELETE', payload: client });
   };
 
   return (
@@ -128,7 +133,13 @@ export default function Client({ toggleCreateClientModel, clientDetails }) {
                         </button>
                       </div>
                       <div className="flex flex-grow justify-center items-center">
-                        <button className="w-20 h-6 bg-red-500 text-white hover:bg-[#570987] hover:text-amber-300 duration-300 shadow-md rounded-b-sm text-xs flex items-center justify-center">
+                        <button
+                          onClick={() => {
+                            handleDeleteUpdate(client);
+                            toggleDeleteClientModel();
+                          }}
+                          className="w-20 h-6 bg-red-500 text-white hover:bg-[#570987] hover:text-amber-300 duration-300 shadow-md rounded-b-sm text-xs flex items-center justify-center"
+                        >
                           <ImCross className="mr-2" />
                           Delete
                         </button>
